@@ -5,7 +5,7 @@
 #
 # Usage:
 #
-#  LOG_LEVEL=7 ./ftags -t tag1 file1 file2 ....
+#  LOG_LEVEL=7 ./ftags -t tag1,tag2 file1 file2 ....
 #  LOG_LEVEL=7 ./ftags tag1 
 #
 # The MIT License (MIT)
@@ -30,7 +30,7 @@ set -o pipefail
 __BOILERPLATE_VERSION__="2016.10.6"
 
 # Set script version 
-__version="2016.10"
+__version="2017.12"
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
   __i_am_main_script="0" # false
@@ -157,19 +157,19 @@ function help () {
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
   -f --file  [arg] Filename to process. Required.
   -t --temp  [arg] Location of tempfile. Default="/tmp/bar"
+  -t --tag   [arg] Comma separated list of tags to set
+  -p --prune       Prune broken tags
   -v               Enable verbose mode, print script as it is executed
   -d --debug       Enables debug mode
   -h --help        This page
   -n --no-color    Disable color output
-  -1 --one         Do just one thing
   -V --version     Show version and exit
 EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
- This is Bash3 Boilerplate's help text. Feel free to add any description of your
- program or elaborate more on command-line arguments. This section is not
- parsed and will be added as-is to the help.
+ ftags sets tags on files and searches for them.  #TODO: add more stuff here.
+ #TODO: use 'parallel' if available
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -389,8 +389,12 @@ fi
 ### Validation. Error out if the things required for your script are not present
 ##############################################################################
 
+echo "abc ${arg_t}"
 [[ "${arg_f:-}" ]]     || help      "Setting a filename with -f or --file is required"
+[[ "${arg_t}" && "${#}" < 1 ]]     || help      "At least one filename is required to set a tag"
 [[ "${LOG_LEVEL:-}" ]] || emergency "Cannot continue without LOG_LEVEL. "
+
+# IFS="," read -a ar <<< "a,b,c"
 
 ### Runtime
 ##############################################################################
@@ -402,9 +406,14 @@ info "__base: ${__base}"
 info "OSTYPE: ${OSTYPE}"
 
 info "arg_f: ${arg_f}"
+info "arg_t: ${arg_t}"
+info "arg_p: ${arg_p}"
 info "arg_d: ${arg_d}"
 info "arg_v: ${arg_v}"
 info "arg_h: ${arg_h}"
+
+info "arg 1: ${1}"
+info "arg #: ${#}"
 
 # This goes to STDOUT
 output "General output that goes to stdout regardless of log level"
