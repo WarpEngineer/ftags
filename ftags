@@ -11,6 +11,12 @@
 #  Search for tag
 #  LOG_LEVEL=7 ./ftags tag 
 #
+#  Search for tag - CWD only
+#  LOG_LEVEL=7 ./ftags-local tag
+#
+#  Search for tag - use find instead of slocate/mlocate
+#  LOG_LEVEL=7 ./ftags-find tag
+#
 # The MIT License (MIT)
 # Copyright (c) 2017 A. G. Madi ( @WarpEngineer )
 # You are not obligated to bundle the LICENSE file with your projects as long
@@ -420,16 +426,12 @@ info "arg_p: ${arg_p}"
 info "arg_d: ${arg_d}"
 info "arg_v: ${arg_v}"
 info "arg_h: ${arg_h}"
-
-info "RUN_MODE: ${RUN_MODE}"
-
-info "arg 1: ${1}"
-info "arg #: ${#}"
-info "arg 1 upper: ${1^^}"
-info "arg 1 length: ${#1}"
+info "RUN_MODE:    ${RUN_MODE}"
 
 case ${RUN_MODE} in
 	"SET")
+		# TODO: tags can not contain underscores or spaces
+		# TODO: option to call updatedb after setting tags
 		IFS="," read -a tag_array <<< ${arg_t}
 		for tag in "${tag_array[@]}"; do
 			debug "tag: ${tag}"
@@ -440,12 +442,36 @@ case ${RUN_MODE} in
 		done
 		;;
 	"SEARCH")
+		#TODO: look for locate command and warn if not available.
+		# set search mode
+		case "${__base}" in 
+			"ftags-local")
+				# search only in CWD
+				SEARCH_MODE="local"
+				;;
+			"ftags-find")
+				# search using find command instead of locate command
+				SEARCH_MODE="find"
+				;;
+			*)
+				# search using locate command
+				SEARCH_MODE="default"
+		esac
+		# search tags
+		# TODO: use search mode
 		for tag in "${@}"; do
 			# TODO: verify file exists, get realpath
-			debug "search tag: ${tag}"
+			debug "search tag: FTAGS_${tag^^}_*"
+			files=$(locate --regexp FTAGS_${tag^^}_*) || true
+			for file in ${files}; do
+				DIR=$(dirname "${file}")
+				BASE=$(basename ${file})
+				found="${DIR%.ftags}${BASE#FTAGS_${tag^^}_}"
+				( [[ -e "${found}" ]] && output "${found}" ) || error "${found}"
+			done
 		done
 		;;
 	*)
-		echo error
+		error "Unknown run mode: ${RUN_MODE}"
 esac
 
