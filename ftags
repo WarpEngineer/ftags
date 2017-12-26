@@ -8,6 +8,9 @@
 #  Set tags on files:
 #  LOG_LEVEL=7 ./ftags -t tag1,tag2 file1 file2 ....
 #
+#  List tags on files:
+#  LOG_LEVEL=7 ./ftags -l file1 file2 ...
+#
 #  Search for tag
 #  LOG_LEVEL=7 ./ftags tag 
 #
@@ -16,6 +19,9 @@
 #
 #  Search for tag - use find instead of slocate/mlocate
 #  LOG_LEVEL=7 ./ftags-find tag
+#
+#  Remove tag
+#  LOG_LEVEL=7 ./ftags -r tag1,tag2 file1 file1 ...
 #
 # The MIT License (MIT)
 # Copyright (c) 2017 A. G. Madi ( @WarpEngineer )
@@ -164,13 +170,16 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -t --tags  [arg] Comma separated list of tags to set
-  -p --prune       Prune broken tags
-  -v               Enable verbose mode, print script as it is executed
-  -d --debug       Enables debug mode
-  -h --help        This page
-  -n --no-color    Disable color output
-  -V --version     Show version and exit
+  -l --list         List set tags
+  -t --tags   [arg] Comma separated list of tags to set
+  -r --remove [arg] Comma separated list of tags to remove
+  -u --update       Update slocate/mlocate database after setting/removing tags #TODO
+  -p --prune        Prune broken tags. Implies -u #TODO
+  -v                Enable verbose mode, print script as it is executed
+  -d --debug        Enables debug mode
+  -h --help         This page
+  -n --no-color     Disable color output
+  -V --version      Show version and exit
 EOF
 
 # shellcheck disable=SC2015
@@ -180,6 +189,9 @@ EOF
  usage2: ...
  ...
  #TODO: use 'parallel' if available
+ #TODO: create 'color' output functions (without timestamp) and color green for 
+ 	files found that exist and red for files found that no longer exist.
+ #TODO: add generict 'color' output functions to boilerplate.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -406,6 +418,9 @@ fi
 if [[ "${arg_t:-}" ]]; then
 	[[ "${#}" != "0" ]]         || help      "At least one filename is required to set a tag"
 	RUN_MODE="SET"
+elif [[ "${arg_r:-}" ]]; then
+	[[ "${#}" != "0" ]]         || help      "At least one filename is required to remove a tag"
+	RUN_MODE="REMOVE"
 else
 	# default mode is to search on tags
 	RUN_MODE="SEARCH"
@@ -433,12 +448,33 @@ case ${RUN_MODE} in
 		# TODO: tags can not contain underscores or spaces
 		# TODO: option to call updatedb after setting tags
 		IFS="," read -a tag_array <<< ${arg_t}
-		for tag in "${tag_array[@]}"; do
-			debug "tag: ${tag}"
-		done
 		for file in "${@}"; do
-			# TODO: verify file exists, get realpath
-			debug "file: ${file}"
+			# get realpath of file and verify it exists
+			realfile=$(realpath ${file})
+			[[ -f "${realfile}" ]] || emergency "File is not accessible: ${realfile}"
+			DIR=$(dirname "${realfile}")
+			BASE=$(basename ${realfile})
+			# ensure .ftags directory exists
+			mkdir -p "$DIR"/.ftags
+			for tag in "${tag_array[@]}"; do
+				debug "setting ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
+				touch "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
+			done
+		done
+		;;
+	"REMOVE")
+		# TODO: tags can not contain underscores or spaces
+		# TODO: option to call updatedb after removing tags
+		IFS="," read -a tag_array <<< ${arg_r}
+		for file in "${@}"; do
+			# get realpath of file and verify it exists
+			realfile=$(realpath ${file})
+			DIR=$(dirname "${realfile}")
+			BASE=$(basename ${realfile})
+			for tag in "${tag_array[@]}"; do
+				debug "removing ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
+				rm -f "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
+			done
 		done
 		;;
 	"SEARCH")
@@ -464,6 +500,7 @@ case ${RUN_MODE} in
 			debug "search tag: FTAGS_${tag^^}_*"
 			files=$(locate --regexp FTAGS_${tag^^}_*) || true
 			for file in ${files}; do
+				debug "file: ${file}"
 				DIR=$(dirname "${file}")
 				BASE=$(basename ${file})
 				found="${DIR%.ftags}${BASE#FTAGS_${tag^^}_}"
