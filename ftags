@@ -171,7 +171,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -l --list         List set tags
+  -l --list         List set tags #TODO
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
   -u --update       Update slocate/mlocate database after setting/removing tags #TODO
@@ -440,7 +440,10 @@ info "__base: ${__base}"
 info "OSTYPE: ${OSTYPE}"
 
 info "arg_t: ${arg_t}"
+info "arg_r: ${arg_r}"
+info "arg_u: ${arg_u}"
 info "arg_p: ${arg_p}"
+info "arg_l: ${arg_l}"
 info "arg_d: ${arg_d}"
 info "arg_v: ${arg_v}"
 info "arg_h: ${arg_h}"
