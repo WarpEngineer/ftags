@@ -14,14 +14,16 @@
 #  Search for tag
 #  LOG_LEVEL=7 ./ftags tag 
 #
+#  Remove tag
+#  LOG_LEVEL=7 ./ftags -r tag1,tag2 file1 file1 ...
+#
+#  Future feature:
 #  Search for tag - CWD only
 #  LOG_LEVEL=7 ./ftags-local tag
 #
+#  Future feature:
 #  Search for tag - use find instead of slocate/mlocate
 #  LOG_LEVEL=7 ./ftags-find tag
-#
-#  Remove tag
-#  LOG_LEVEL=7 ./ftags -r tag1,tag2 file1 file1 ...
 #
 # The MIT License (MIT)
 # Copyright (c) 2017 A. G. Madi ( @WarpEngineer )
@@ -103,7 +105,6 @@ function __b3bp_log () {
   local color="${!colorvar:-${color_error}}"
   local color_reset="\x1b[0m"
 
-  # TODO: look at more than just 'xterm'.  tput colors, screen, screen-256color
   if [[ "${NO_COLOR:-}" = "true" ]] || ( [[ "${TERM:-}" != "xterm"* ]] && [[ "${TERM:-}" != "screen"* ]] ) || [[ ! -t 2 ]]; then
     if [[ "${NO_COLOR:-}" != "false" ]]; then
       # Don't use colors on pipes or non-recognized terminals
@@ -185,13 +186,15 @@ EOF
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
  ftags sets tags on files and searches for them.  #TODO: add more stuff here.
+ Note: moving a file will break its tags. moving a directory will break tags until nex time updatedb is run.
  usage1: ...
  usage2: ...
  ...
  #TODO: use 'parallel' if available
  #TODO: create 'color' output functions (without timestamp) and color green for 
  	files found that exist and red for files found that no longer exist.
- #TODO: add generict 'color' output functions to boilerplate.
+ #TODO: add generic 'color' output functions to boilerplate.
+ #TODO: man page and installer (install?)
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -445,25 +448,25 @@ info "RUN_MODE:    ${RUN_MODE}"
 
 case ${RUN_MODE} in
 	"SET")
-		# TODO: tags can not contain underscores or spaces
 		# TODO: option to call updatedb after setting tags
 		IFS="," read -a tag_array <<< ${arg_t}
 		for file in "${@}"; do
 			# get realpath of file and verify it exists
 			realfile=$(realpath ${file})
-			[[ -f "${realfile}" ]] || emergency "File is not accessible: ${realfile}"
+			[[ -r "${realfile}" ]] || emergency "File is not accessible: ${realfile}"
 			DIR=$(dirname "${realfile}")
 			BASE=$(basename ${realfile})
 			# ensure .ftags directory exists
 			mkdir -p "$DIR"/.ftags
 			for tag in "${tag_array[@]}"; do
+				[[ "${tag}" == *_* ]] && emergency "Tag can not contain underscores"
+				[[ "${tag}" == *\ * ]] && emergency "Tag can not contain spaces"
 				debug "setting ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 				touch "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 			done
 		done
 		;;
 	"REMOVE")
-		# TODO: tags can not contain underscores or spaces
 		# TODO: option to call updatedb after removing tags
 		IFS="," read -a tag_array <<< ${arg_r}
 		for file in "${@}"; do
@@ -472,15 +475,18 @@ case ${RUN_MODE} in
 			DIR=$(dirname "${realfile}")
 			BASE=$(basename ${realfile})
 			for tag in "${tag_array[@]}"; do
+				[[ "${tag}" == *_* ]] && warning "Tag can not contain underscores"
+				[[ "${tag}" == *\ * ]] && warning "Tag can not contain spaces"
 				debug "removing ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 				rm -f "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 			done
 		done
 		;;
 	"SEARCH")
-		#TODO: look for locate command and warn if not available.
+		# this should be a warning in future and fallback to 'find' if not found
+		[[ ! $(which locate) ]] && emergency "Command 'locate' not found in path. Install slocate or mlocate."
 		# set search mode
-		case "${__base}" in 
+		case "${__base}" in  # This is here for a future feature
 			"ftags-local")
 				# search only in CWD
 				SEARCH_MODE="local"
@@ -494,7 +500,7 @@ case ${RUN_MODE} in
 				SEARCH_MODE="default"
 		esac
 		# search tags
-		# TODO: use search mode
+		# TODO: use search mode ( future feature )
 		for tag in "${@}"; do
 			# TODO: verify file exists, get realpath
 			debug "search tag: FTAGS_${tag^^}_*"
