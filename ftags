@@ -540,7 +540,6 @@ case ${RUN_MODE} in
 		# search tags
 		# TODO: use search mode ( future feature )
 		for tag in "${@}"; do
-			# TODO: verify file exists, get realpath
 			debug "search tag: FTAGS_${tag^^}_*"
 			files=$(locate --regexp FTAGS_${tag^^}_*) || true
 			for file in ${files}; do
@@ -548,7 +547,7 @@ case ${RUN_MODE} in
 				DIR=$(dirname "${file}")
 				BASE=$(basename ${file})
 				found="${DIR%.ftags}${BASE#FTAGS_${tag^^}_}"
-				( [[ -e "${found}" ]] && output "${found}" ) || error "${found}"
+				( [[ -e "${found}" ]] && green_out "${found}" ) || red_out "${found}"
 			done
 		done
 		;;
