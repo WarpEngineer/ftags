@@ -8,8 +8,8 @@
 #  Set tags on files:
 #  LOG_LEVEL=7 ./ftags -t tag1,tag2 file1 file2 ....
 #
-#  List tags on files:
-#  LOG_LEVEL=7 ./ftags -l file1 file2 ...
+#  List tags on files or directories
+#  LOG_LEVEL=7 ./ftags -l [ file1 file2 directory1 ... ]
 #
 #  Search for tag
 #  LOG_LEVEL=7 ./ftags tag 
@@ -198,7 +198,7 @@ function help () {
 
 # shellcheck disable=SC2015
 [[ "${__usage+x}" ]] || read -r -d '' __usage <<-'EOF' || true # exits non-zero when EOF encountered
-  -l --list         List set tags #TODO
+  -l --list         List set tags on files or directories
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
   -u --update       Update slocate/mlocate database after setting/removing tags #TODO
@@ -459,6 +459,9 @@ if [[ "${arg_t:-}" ]]; then
 elif [[ "${arg_r:-}" ]]; then
 	[[ "${#}" != "0" ]]         || help      "At least one filename is required to remove a tag"
 	RUN_MODE="REMOVE"
+elif [[ "${arg_l:-}" == 1 ]]; then
+	[[ "${#}" != "0" ]]         || help      "At least one filename or directory required to list tags"
+	RUN_MODE="LIST"
 else
 	# default mode is to search on tags
 	RUN_MODE="SEARCH"
@@ -489,6 +492,7 @@ case ${RUN_MODE} in
 		# TODO: option to call updatedb after setting tags
 		IFS="," read -a tag_array <<< ${arg_t}
 		for file in "${@}"; do
+			# TODO: verify file exists
 			# get realpath of file and verify it exists
 			realfile=$(realpath ${file})
 			[[ -r "${realfile}" ]] || emergency "File is not accessible: ${realfile}"
@@ -509,6 +513,7 @@ case ${RUN_MODE} in
 		IFS="," read -a tag_array <<< ${arg_r}
 		for file in "${@}"; do
 			# get realpath of file and verify it exists
+			# TODO: verify file exists
 			realfile=$(realpath ${file})
 			DIR=$(dirname "${realfile}")
 			BASE=$(basename ${realfile})
@@ -518,6 +523,28 @@ case ${RUN_MODE} in
 				debug "removing ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 				rm -f "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 			done
+		done
+		;;
+	"LIST")
+		for file in "${@}"; do
+			# TODO: verify file exists
+			realfile=$(realpath ${file})
+			if ([[ -d ${realfile} ]] && [[ -d ${realfile}/.ftags ]]); then
+				for f in ${realfile}/.ftags/FTAGS_*; do
+					debug "file: ${f}"
+					if [[ -f ${f} ]]; then
+				  	  DIR=$(dirname "${f}")
+				  	  BASE=$(basename ${f})
+					  IFS='_' read -a taglines <<< ${BASE}
+				  	  ( [[ -e "${DIR%.ftags}${taglines[2]}" ]] \
+					    && green_out "tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" ) \
+					    || red_out "tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" 
+					fi
+				done
+			elif [[ -f ${realfile} ]]; then
+				#TODO
+				echo TODO 
+			fi
 		done
 		;;
 	"SEARCH")
