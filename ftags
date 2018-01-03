@@ -222,6 +222,7 @@ EOF
  	files found that exist and red for files found that no longer exist.
  #TODO: add generic 'color' output functions to boilerplate.
  #TODO: man page and installer (install?)
+ #TODO: if no color, need to show something instead of red/green
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
