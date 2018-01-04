@@ -217,10 +217,7 @@ EOF
  usage1: ...
  usage2: ...
  ...
- #TODO: use 'parallel' if available
- #TODO: create 'color' output functions (without timestamp) and color green for 
- 	files found that exist and red for files found that no longer exist.
- #TODO: add generic 'color' output functions to boilerplate.
+ #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: man page and installer (install?)
  #TODO: if no color, need to show something instead of red/green
 EOF
@@ -493,7 +490,6 @@ case ${RUN_MODE} in
 		# TODO: option to call updatedb after setting tags
 		IFS="," read -a tag_array <<< ${arg_t}
 		for file in "${@}"; do
-			# TODO: verify file exists
 			# get realpath of file and verify it exists
 			realfile=$(realpath ${file})
 			[[ -r "${realfile}" ]] || emergency "File is not accessible: ${realfile}"
@@ -513,8 +509,7 @@ case ${RUN_MODE} in
 		# TODO: option to call updatedb after removing tags
 		IFS="," read -a tag_array <<< ${arg_r}
 		for file in "${@}"; do
-			# get realpath of file and verify it exists
-			# TODO: verify file exists
+			# get realpath of file
 			realfile=$(realpath ${file})
 			DIR=$(dirname "${realfile}")
 			BASE=$(basename ${realfile})
@@ -545,6 +540,8 @@ case ${RUN_MODE} in
 			elif [[ -f ${realfile} ]]; then
 				#TODO
 				echo TODO 
+			else
+				echo TODO \(no file\)
 			fi
 		done
 		;;
