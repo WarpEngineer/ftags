@@ -538,10 +538,14 @@ case ${RUN_MODE} in
 					fi
 				done
 			elif [[ -f ${realfile} ]]; then
-				#TODO
-				echo TODO 
-			else
-				echo TODO \(no file\)
+				DIR=$(dirname "${realfile}")
+				BASE=$(basename ${realfile})
+				for f in ${DIR}/.ftags/FTAGS_*_${BASE}; do
+				  debug "file: ${f}"
+				  BASE=$(basename ${f})
+				  IFS='_' read -a taglines <<< ${BASE}
+				  green_out "${taglines[1]}"
+				done
 			fi
 		done
 		;;
