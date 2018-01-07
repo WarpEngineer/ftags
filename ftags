@@ -201,7 +201,7 @@ function help () {
   -l --list         List set tags on files or directories
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
-  -u --update       Update slocate/mlocate database after setting/removing tags #TODO
+  -u --update       Update slocate/mlocate database after setting/removing tags
   -p --prune        Prune broken tags. Implies -u #TODO
   -v                Enable verbose mode, print script as it is executed
   -d --debug        Enables debug mode
@@ -213,13 +213,15 @@ EOF
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
  ftags sets tags on files and searches for them.  #TODO: add more stuff here.
- Note: moving a file will break its tags. moving a directory will break tags until nex time updatedb is run.
+ Note: moving a file will break its tags. moving a directory will break tags until next time updatedb is run.
  usage1: ...
  usage2: ...
  ...
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: man page and installer (install?)
  #TODO: if no color, need to show something instead of red/green
+ #TODO: updatedb after set/remove should look for update script. it's different on mac os.
+ #TODO: maybe run the updatedb in the background
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -487,7 +489,6 @@ info "RUN_MODE:    ${RUN_MODE}"
 
 case ${RUN_MODE} in
 	"SET")
-		# TODO: option to call updatedb after setting tags
 		IFS="," read -a tag_array <<< ${arg_t}
 		for file in "${@}"; do
 			# get realpath of file and verify it exists
@@ -504,9 +505,9 @@ case ${RUN_MODE} in
 				touch "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 			done
 		done
+		[[ ${arg_u} = 1 ]] && ( info "Updating db"; sudo updatedb )
 		;;
 	"REMOVE")
-		# TODO: option to call updatedb after removing tags
 		IFS="," read -a tag_array <<< ${arg_r}
 		for file in "${@}"; do
 			# get realpath of file
@@ -520,14 +521,15 @@ case ${RUN_MODE} in
 				rm -f "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
 			done
 		done
+		[[ ${arg_u} = 1 ]] && ( info "Updating db"; sudo updatedb )
 		;;
 	"LIST")
 		for file in "${@}"; do
-			# TODO: verify file exists
 			realfile=$(realpath ${file})
+			debug "realfile: ${realfile}"
 			if ([[ -d ${realfile} ]] && [[ -d ${realfile}/.ftags ]]); then
 				for f in ${realfile}/.ftags/FTAGS_*; do
-					debug "file: ${f}"
+					debug "tagfile: ${f}"
 					if [[ -f ${f} ]]; then
 				  	  DIR=$(dirname "${f}")
 				  	  BASE=$(basename ${f})
@@ -541,10 +543,10 @@ case ${RUN_MODE} in
 				DIR=$(dirname "${realfile}")
 				BASE=$(basename ${realfile})
 				for f in ${DIR}/.ftags/FTAGS_*_${BASE}; do
-				  debug "file: ${f}"
+				  debug "tagfile: ${f}"
 				  BASE=$(basename ${f})
 				  IFS='_' read -a taglines <<< ${BASE}
-				  green_out "${taglines[1]}"
+				  [[ ! "${taglines[1]}" = "*" ]] && green_out "${taglines[1]}"
 				done
 			fi
 		done
