@@ -99,6 +99,8 @@ COLOR_RESET="\x1b[0m"
 function __b3bp_color_out () {
   local out_color="${1}"
   shift
+  local no_color_substitute="${1}"
+  shift
 
   local colorvar="COLOR_${out_color^^}"
   local color="${!colorvar:-${COLOR_ERROR}}"
@@ -106,20 +108,20 @@ function __b3bp_color_out () {
 
   if [[ "${NO_COLOR:-}" = "true" ]] || [[ ! -t 1 ]]; then
     # Don't use colors on pipes
-    color=""; color_reset=""
+    color=${no_color_substitute}; color_reset=""
   fi
   while IFS=$'\n' read -r out_line; do
     echo -e "${color}${out_line}${color_reset}"
   done <<< "${@:-}"
 }
 
-function cyan_out    () { __b3bp_color_out cyan "${@}";    }
-function purple_out  () { __b3bp_color_out purple "${@}";  }
-function green_out   () { __b3bp_color_out green "${@}";   }
-function blue_out    () { __b3bp_color_out blue "${@}";    }
-function yellow_out  () { __b3bp_color_out yellow "${@}";  }
-function darkred_out () { __b3bp_color_out darkred "${@}"; }
-function red_out     () { __b3bp_color_out red "${@}";     }
+function cyan_out    () { __b3bp_color_out cyan    ""  "${@}";     }
+function purple_out  () { __b3bp_color_out purple  ""  "${@}";     }
+function green_out   () { __b3bp_color_out green   "+" "${@}";     }
+function blue_out    () { __b3bp_color_out blue    ""  "${@}";     }
+function yellow_out  () { __b3bp_color_out yellow  ""  "${@}";     }
+function darkred_out () { __b3bp_color_out darkred ""  "${@}";     }
+function red_out     () { __b3bp_color_out red     "-" "${@}";     }
 
 function __b3bp_log () {
   local log_level="${1}"
@@ -202,7 +204,7 @@ function help () {
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
   -u --update       Update slocate/mlocate database after setting/removing tags
-  -p --prune        Prune broken tags. Implies -u #TODO
+  -p --prune        Prune broken tags in a directory. Implies -u #TODO
   -v                Enable verbose mode, print script as it is executed
   -d --debug        Enables debug mode
   -h --help         This page
@@ -219,7 +221,6 @@ EOF
  ...
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: man page and installer (install?)
- #TODO: if no color, need to show something instead of red/green
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
  #TODO: maybe run the updatedb in the background
 EOF
