@@ -49,6 +49,9 @@ __BOILERPLATE_VERSION__="2016.10.6"
 # Set script version 
 __version="2017.12.0.1"
 
+# BASH version 4+ is required
+[[ "${BASH_VERSION:0:1}" -ge "4" ]] || (echo "ERROR: BASH version 4 or above is required"; exit 1)
+
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
   __i_am_main_script="0" # false
 
@@ -448,9 +451,6 @@ fi
 
 ### Validation. Error out if the things required for your script are not present
 ##############################################################################
-
-# BASH version 4+ is required
-[[ "${BASH_VERSION:0:1}" -ge "4" ]] || emergency "BASH version 4 or above is required"
 [[ "${LOG_LEVEL:-}" ]]              || emergency "Cannot continue without LOG_LEVEL. "
 
 # set run mode
