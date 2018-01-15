@@ -222,7 +222,7 @@ EOF
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: man page and installer (install?)
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
- #TODO: maybe run the updatedb in the background
+ #TODO: maybe run the updatedb in the background (use pidof to make sure not to run too much)
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -330,8 +330,8 @@ if [[ "${__b3bp_tmp_opts:-}" ]]; then
     __b3bp_tmp_default="${!__b3bp_tmp_varname}"
 
     __b3bp_tmp_value="${OPTARG}"
-    if [[ -z "${OPTARG}" ]] && [[ "${__b3bp_tmp_default}" = "0" ]]; then
-      __b3bp_tmp_value="1"
+    if [[ -z "${OPTARG}" ]]; then
+      __b3bp_tmp_value=$((${__b3bp_tmp_default} + 1))
     fi
 
     printf -v "${__b3bp_tmp_varname}" '%s' "${__b3bp_tmp_value}"
@@ -425,7 +425,6 @@ if [[ "${arg_n:?}" = "1" ]]; then
   NO_COLOR="true"
 else
   # autodetect but default to false if not set
-  # TODO: look at more than just 'xterm'.  tput colors, screen, screen-256color
   if ( [[ "${TERM:-}" != "xterm"* ]] && [[ "${TERM:-}" != "screen"* ]] ); then
     # Don't use colors on non-recognized terminals
     NO_COLOR="true"
