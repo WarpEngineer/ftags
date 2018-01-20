@@ -226,7 +226,6 @@ EOF
  #TODO: man page and installer (install?)
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
  #TODO: maybe run the updatedb in the background (use pidof to make sure not to run too much)
- #TODO: /mnt/c/Users/A.G/SkyDrive/Books/humblebundle3 Linux  that directory fails because of the space.
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
@@ -579,7 +578,7 @@ case ${RUN_MODE} in
 				BASE=$(basename "${file}")
 				found="${DIR%.ftags}${BASE#FTAGS_${tag^^}_}"
 				( [[ -e "${found}" ]] && green_out "${found}" ) || red_out "${found}"
-			done < <(locate --regexp FTAGS_${tag^^}_*)
+			done < <(locate FTAGS_${tag^^}_)
 		done
 		;;
 	*)
