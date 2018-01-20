@@ -493,10 +493,10 @@ case ${RUN_MODE} in
 		IFS="," read -a tag_array <<< ${arg_t}
 		for file in "${@}"; do
 			# get realpath of file and verify it exists
-			realfile=$(realpath ${file})
+			realfile=$(realpath "${file}")
 			[[ -r "${realfile}" ]] || emergency "File is not accessible: ${realfile}"
 			DIR=$(dirname "${realfile}")
-			BASE=$(basename ${realfile})
+			BASE=$(basename "${realfile}")
 			# ensure .ftags directory exists
 			mkdir -p "$DIR"/.ftags
 			for tag in "${tag_array[@]}"; do
@@ -512,9 +512,9 @@ case ${RUN_MODE} in
 		IFS="," read -a tag_array <<< ${arg_r}
 		for file in "${@}"; do
 			# get realpath of file
-			realfile=$(realpath ${file})
+			realfile=$(realpath "${file}")
 			DIR=$(dirname "${realfile}")
-			BASE=$(basename ${realfile})
+			BASE=$(basename "${realfile}")
 			for tag in "${tag_array[@]}"; do
 				[[ "${tag}" == *_* ]] && warning "Tag can not contain underscores"
 				[[ "${tag}" == *\ * ]] && warning "Tag can not contain spaces"
@@ -526,27 +526,27 @@ case ${RUN_MODE} in
 		;;
 	"LIST")
 		for file in "${@}"; do
-			realfile=$(realpath ${file})
+			realfile=$(realpath "${file}")
 			debug "realfile: ${realfile}"
-			if ([[ -d ${realfile} ]] && [[ -d ${realfile}/.ftags ]]); then
-				for f in ${realfile}/.ftags/FTAGS_*; do
+			if ([[ -d "${realfile}" ]] && [[ -d "${realfile}"/.ftags ]]); then
+				for f in "${realfile}"/.ftags/FTAGS_*; do
 					debug "tagfile: ${f}"
-					if [[ -f ${f} ]]; then
+					if [[ -f "${f}" ]]; then
 				  	  DIR=$(dirname "${f}")
-				  	  BASE=$(basename ${f})
-					  IFS='_' read -a taglines <<< ${BASE}
+				  	  BASE=$(basename "${f}")
+					  IFS='_' read -a taglines <<< "${BASE}"
 				  	  ( [[ -e "${DIR%.ftags}${taglines[2]}" ]] \
 					    && green_out "tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" ) \
 					    || red_out "tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" 
 					fi
 				done
-			elif [[ -f ${realfile} ]]; then
+			elif [[ -f "${realfile}" ]]; then
 				DIR=$(dirname "${realfile}")
-				BASE=$(basename ${realfile})
-				for f in ${DIR}/.ftags/FTAGS_*_${BASE}; do
+				BASE=$(basename "${realfile}")
+				for f in "${DIR}"/.ftags/FTAGS_*_"${BASE}"; do
 				  debug "tagfile: ${f}"
-				  BASE=$(basename ${f})
-				  IFS='_' read -a taglines <<< ${BASE}
+				  BASE=$(basename "${f}")
+				  IFS='_' read -a taglines <<< "${BASE}"
 				  [[ ! "${taglines[1]}" = "*" ]] && green_out "${taglines[1]}"
 				done
 			fi
@@ -573,14 +573,13 @@ case ${RUN_MODE} in
 		# TODO: use search mode ( future feature )
 		for tag in "${@}"; do
 			debug "search tag: FTAGS_${tag^^}_*"
-			files=$(locate --regexp FTAGS_${tag^^}_*) || true
-			for file in ${files}; do
+			while read -r file; do 
 				debug "file: ${file}"
 				DIR=$(dirname "${file}")
-				BASE=$(basename ${file})
+				BASE=$(basename "${file}")
 				found="${DIR%.ftags}${BASE#FTAGS_${tag^^}_}"
 				( [[ -e "${found}" ]] && green_out "${found}" ) || red_out "${found}"
-			done
+			done < <(locate --regexp FTAGS_${tag^^}_*)
 		done
 		;;
 	*)
