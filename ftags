@@ -226,6 +226,8 @@ EOF
  #TODO: man page and installer (install?)
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
  #TODO: maybe run the updatedb in the background (use pidof to make sure not to run too much)
+ #NOTE: instead of relying on slocate, can we keep the tags in a hierarchy under ~/.ftags?
+ #	it'll be easier to prune that way too, and we can use find command, and no need for sudo
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults
