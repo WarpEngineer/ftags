@@ -1,6 +1,6 @@
 Thinking of different options for locating tags:
 
-Option 1: slocate
+Option 1: mlocate
 pros: 
 	tags are automatically indexed
 	finding tags is easy and fast
@@ -9,6 +9,12 @@ cons:
 	must have slocate installed
 	must use sudo to update the db immediately
 	newly added tags are not searchable until updatedb runs
+Note:
+	locate/slocate vs mlocate: GNU locate does not require root privileges
+	to work since it can run as a regular user, however, I've noticed
+	that mlocate is more likely to be found in different distributions than GNU locate. 
+	Furthermore, it looks like the version installed with Mac OS requires
+	root privileges too.
 
 Option 2: find with central, hierarchical, database
 pros:

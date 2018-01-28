@@ -22,7 +22,7 @@
 #  LOG_LEVEL=7 ./ftags-local tag
 #
 #  Future feature:
-#  Search for tag - use find instead of slocate/mlocate
+#  Search for tag - use find instead of mlocate
 #  LOG_LEVEL=7 ./ftags-find tag
 #
 # The MIT License (MIT)
@@ -206,7 +206,7 @@ function help () {
   -l --list         List set tags on files or directories
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
-  -u --update       Update slocate/mlocate database after setting/removing tags
+  -u --update       Update mlocate database after setting/removing tags
   -p --prune        Prune broken tags in a directory. Implies -u #TODO
   -v                Enable verbose mode, print script as it is executed
   -d --debug        Enables debug mode
@@ -223,10 +223,12 @@ EOF
  usage2: ...
  ...
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
- #TODO: man page and installer (install?)
+ #TODO: man page (look at experiment notes) and installer (install?)
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
- #TODO: maybe run the updatedb in the background (use pidof to make sure not to run too much)
- #NOTE: instead of relying on slocate, can we keep the tags in a hierarchy under ~/.ftags?
+ #TODO: maybe run the updatedb in the background (use pidof to make sure not to run more than one)
+ #TODO: realpath is not available everywhere (Mac) so it should be a local function
+ #TODO: test on a bunch of systems, including Mac OS
+ #NOTE: instead of relying on mlocate, can we keep the tags in a hierarchy under ~/.ftags?
  #	it'll be easier to prune that way too, and we can use find command, and no need for sudo
 EOF
 
@@ -464,6 +466,9 @@ elif [[ "${arg_r:-}" ]]; then
 elif [[ "${arg_l:-}" == 1 ]]; then
 	[[ "${#}" != "0" ]]         || help      "At least one filename or directory required to list tags"
 	RUN_MODE="LIST"
+elif [[ "${arg_p:-}" == 1 ]]; then
+	[[ "${#}" != "0" ]]         || help      "At least one directory required to prune tags"
+	RUN_MODE="PRUNE"
 else
 	# default mode is to search on tags
 	RUN_MODE="SEARCH"
@@ -553,9 +558,31 @@ case ${RUN_MODE} in
 			fi
 		done
 		;;
+	"PRUNE")
+		for arg in "${@}"; do
+			realfile=$(realpath "${arg}")
+			debug "realfile: ${realfile}"
+			if ([[ -d "${realfile}" ]] && [[ -d "${realfile}"/.ftags ]]); then
+				for f in "${realfile}"/.ftags/FTAGS_*; do
+					debug "tagfile: ${f}"
+					if [[ -f "${f}" ]]; then
+				  	  DIR=$(dirname "${f}")
+				  	  BASE=$(basename "${f}")
+					  IFS='_' read -a taglines <<< "${BASE}"
+				  	  if [[ ! -e "${DIR%.ftags}${taglines[2]}" ]]; then
+					    green_out "Removing tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" 
+					    rm -f "${f}"
+					  fi
+					fi
+				done
+			elif [[ -f "${realfile}" ]]; then
+				error "Can not prune a file. Please pass in a directory"
+			fi
+		done
+		;;
 	"SEARCH")
 		# this should be a warning in future and fallback to 'find' if not found
-		[[ ! $(which locate) ]] && emergency "Command 'locate' not found in path. Install slocate or mlocate."
+		[[ ! $(which locate) ]] && emergency "Command 'locate' not found in path. Install mlocate."
 		# set search mode
 		case "${__base}" in  # This is here for a future feature
 			"ftags-local")
