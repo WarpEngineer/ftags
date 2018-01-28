@@ -1,0 +1,23 @@
+Thinking of different options for locating tags:
+
+Option 1: slocate
+pros: 
+	tags are automatically indexed
+	finding tags is easy and fast
+	moving a directory moves the tags too
+cons:
+	must have slocate installed
+	must use sudo to update the db immediately
+	newly added tags are not searchable until updatedb runs
+
+Option 2: find with central, hierarchical, database
+pros:
+	all tags are located together
+cons:
+	find is slower than slocate
+
+Option 3: find with central database in single directory
+pros:
+	finding tags is faster since they're all together
+cons:
+	directory can get too big with all tag files in it
