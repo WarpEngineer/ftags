@@ -579,6 +579,7 @@ case ${RUN_MODE} in
 				error "Can not prune a file. Please pass in a directory"
 			fi
 		done
+		[[ ${arg_u} = 1 ]] && ( info "Updating db"; sudo updatedb )
 		;;
 	"SEARCH")
 		# this should be a warning in future and fallback to 'find' if not found
