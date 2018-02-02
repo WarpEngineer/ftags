@@ -225,8 +225,10 @@ EOF
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: man page (look at experiment notes) and installer (install?)
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
+ #	/usr/libexec/locate.updatedb
  #TODO: maybe run the updatedb in the background (use pidof to make sure not to run more than one)
  #TODO: realpath is not available everywhere (Mac) so it should be a local function
+ #      see https://flummox-engineering.blogspot.com/2014/06/getting-absolute-path-in-bash-in-osx.html
  #TODO: test on a bunch of systems, including Mac OS
  #NOTE: instead of relying on mlocate, can we keep the tags in a hierarchy under ~/.ftags?
  #	it'll be easier to prune that way too, and we can use find command, and no need for sudo
