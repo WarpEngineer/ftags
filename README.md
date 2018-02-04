@@ -7,6 +7,7 @@ Set tags on files using a simple Bash script.  The script can find files using t
 * bash 4
 * slocate/mlocate (on Mac: /usr/libexec/locate.updatedb)
 * find?
+* building man page requires pandoc
 * realpath: either coreutils or readlink -f or function:
 <pre>
     realpath ()
