@@ -222,7 +222,6 @@ EOF
  usage1: ...
  usage2: ...
  ...
- #TODO: Error setting tag on Go_in_Action_v2_MEAP.pdf, probably because of underscores.
  #TODO: man page (look at experiment notes) and installer (install?)
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
@@ -545,9 +544,10 @@ case ${RUN_MODE} in
 				  	  DIR=$(dirname "${f}")
 				  	  BASE=$(basename "${f}")
 					  IFS='_' read -a taglines <<< "${BASE}"
-				  	  ( [[ -e "${DIR%.ftags}${taglines[2]}" ]] \
-					    && green_out "tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" ) \
-					    || red_out "tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" 
+					  FOUND=${taglines[@]:2}
+				  	  ( [[ -e "${DIR%.ftags}${FOUND// /_}" ]] \
+					    && green_out "tag ${taglines[1]} set on ${DIR%.ftags}${FOUND// /_}" ) \
+					    || red_out "tag ${taglines[1]} set on ${DIR%.ftags}${FOUND// /_}" 
 					fi
 				done
 			elif [[ -f "${realfile}" ]]; then
@@ -573,8 +573,9 @@ case ${RUN_MODE} in
 				  	  DIR=$(dirname "${f}")
 				  	  BASE=$(basename "${f}")
 					  IFS='_' read -a taglines <<< "${BASE}"
-				  	  if [[ ! -e "${DIR%.ftags}${taglines[2]}" ]]; then
-					    green_out "Removing tag ${taglines[1]} set on ${DIR%.ftags}${taglines[2]}" 
+					  FOUND=${taglines[@]:2}
+				  	  if [[ ! -e "${DIR%.ftags}${FOUND// /_}" ]]; then
+					    green_out "Removing tag ${taglines[1]} set on ${DIR%.ftags}${FOUND// /_}" 
 					    rm -f "${f}"
 					  fi
 					fi
