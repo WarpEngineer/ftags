@@ -206,6 +206,7 @@ function help () {
   -l --list         List set tags on files or directories
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
+  -R --recurse      #TODO recurse through subdirs.
   -u --update       Update mlocate database after setting/removing tags
   -p --prune        Prune broken tags in a directory
   -v                Enable verbose mode, print script as it is executed
