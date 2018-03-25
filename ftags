@@ -510,10 +510,10 @@ case ${RUN_MODE} in
 			# ensure .ftags directory exists
 			mkdir -p "$DIR"/.ftags
 			for tag in "${tag_array[@]}"; do
-				[[ "${tag}" == *_* ]] && emergency "Tag can not contain underscores"
+				[[ "${tag}" == *@* ]] && emergency "Tag can not contain @ sign"
 				[[ "${tag}" == *\ * ]] && emergency "Tag can not contain spaces"
-				debug "setting ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
-				touch "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
+				debug "setting ${DIR}/.ftags/FTAGS@${tag^^}@${BASE}"
+				touch "${DIR}/.ftags/FTAGS@${tag^^}@${BASE}"
 			done
 		done
 		[[ ${arg_u} = 1 ]] && ( info "Updating db"; sudo updatedb )
@@ -526,10 +526,10 @@ case ${RUN_MODE} in
 			DIR=$(dirname "${realfile}")
 			BASE=$(basename "${realfile}")
 			for tag in "${tag_array[@]}"; do
-				[[ "${tag}" == *_* ]] && warning "Tag can not contain underscores"
+				[[ "${tag}" == *@* ]] && warning "Tag can not contain @ sign"
 				[[ "${tag}" == *\ * ]] && warning "Tag can not contain spaces"
-				debug "removing ${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
-				rm -f "${DIR}/.ftags/FTAGS_${tag^^}_${BASE}"
+				debug "removing ${DIR}/.ftags/FTAGS@${tag^^}@${BASE}"
+				rm -f "${DIR}/.ftags/FTAGS@${tag^^}@${BASE}"
 			done
 		done
 		[[ ${arg_u} = 1 ]] && ( info "Updating db"; sudo updatedb )
@@ -539,25 +539,28 @@ case ${RUN_MODE} in
 			realfile=$(realpath "${file}")
 			debug "realfile: ${realfile}"
 			if ([[ -d "${realfile}" ]] && [[ -d "${realfile}"/.ftags ]]); then
-				for f in "${realfile}"/.ftags/FTAGS_*; do
+				for f in "${realfile}"/.ftags/FTAGS@*; do
 					debug "tagfile: ${f}"
 					if [[ -f "${f}" ]]; then
 				  	  DIR=$(dirname "${f}")
 				  	  BASE=$(basename "${f}")
-					  IFS='_' read -a taglines <<< "${BASE}"
+					  debug "dirname: ${DIR}"
+					  debug "basename: ${BASE}"
+					  IFS='@' read -a taglines <<< "${BASE}"
 					  FOUND=${taglines[@]:2}
-				  	  ( [[ -e "${DIR%.ftags}${FOUND// /_}" ]] \
-					    && green_out "tag ${taglines[1]} set on ${DIR%.ftags}${FOUND// /_}" ) \
-					    || red_out "tag ${taglines[1]} set on ${DIR%.ftags}${FOUND// /_}" 
+					  debug "found: ${FOUND}"
+				  	  ( [[ -e "${DIR%.ftags}""${FOUND}" ]] \
+					    && green_out "tag ${taglines[1]} set on ${DIR%.ftags}${FOUND}" ) \
+					    || red_out "tag ${taglines[1]} set on ${DIR%.ftags}${FOUND}" 
 					fi
 				done
 			elif [[ -f "${realfile}" ]]; then
 				DIR=$(dirname "${realfile}")
 				BASE=$(basename "${realfile}")
-				for f in "${DIR}"/.ftags/FTAGS_*_"${BASE}"; do
+				for f in "${DIR}"/.ftags/FTAGS@*@"${BASE}"; do
 				  debug "tagfile: ${f}"
 				  BASE=$(basename "${f}")
-				  IFS='_' read -a taglines <<< "${BASE}"
+				  IFS='@' read -a taglines <<< "${BASE}"
 				  [[ ! "${taglines[1]}" = "*" ]] && green_out "${taglines[1]}"
 				done
 			fi
@@ -568,15 +571,15 @@ case ${RUN_MODE} in
 			realfile=$(realpath "${arg}")
 			debug "realfile: ${realfile}"
 			if ([[ -d "${realfile}" ]] && [[ -d "${realfile}"/.ftags ]]); then
-				for f in "${realfile}"/.ftags/FTAGS_*; do
+				for f in "${realfile}"/.ftags/FTAGS@*; do
 					debug "tagfile: ${f}"
 					if [[ -f "${f}" ]]; then
 				  	  DIR=$(dirname "${f}")
 				  	  BASE=$(basename "${f}")
-					  IFS='_' read -a taglines <<< "${BASE}"
+					  IFS='@' read -a taglines <<< "${BASE}"
 					  FOUND=${taglines[@]:2}
-				  	  if [[ ! -e "${DIR%.ftags}${FOUND// /_}" ]]; then
-					    green_out "Removing tag ${taglines[1]} set on ${DIR%.ftags}${FOUND// /_}" 
+				  	  if [[ ! -e "${DIR%.ftags}${FOUND}" ]]; then
+					    green_out "Removing tag ${taglines[1]} set on ${DIR%.ftags}${FOUND}" 
 					    rm -f "${f}"
 					  fi
 					fi
@@ -607,14 +610,14 @@ case ${RUN_MODE} in
 		# search tags
 		# TODO: use search mode ( future feature )
 		for tag in "${@}"; do
-			debug "search tag: FTAGS_${tag^^}_*"
+			debug "search tag: FTAGS@${tag^^}@*"
 			while read -r file; do 
 				debug "file: ${file}"
 				DIR=$(dirname "${file}")
 				BASE=$(basename "${file}")
-				found="${DIR%.ftags}${BASE#FTAGS_${tag^^}_}"
+				found="${DIR%.ftags}${BASE#FTAGS@${tag^^}@}"
 				( [[ -e "${found}" ]] && green_out "${found}" ) || red_out "${found}"
-			done < <(locate FTAGS_${tag^^}_)
+			done < <(locate FTAGS@${tag^^}@)
 		done
 		;;
 	*)
