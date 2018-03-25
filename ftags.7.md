@@ -18,7 +18,27 @@ ftags - tag files and search by tags
 -V --version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show version and exit  
 
 # DESCRIPTION
-The **ftags** utility will...
+The **ftags** utility will set tags on files and search for them.  Multiple tags can be set by comma-separating them.
+Searching for tags is accomplished using the mlocate utility, so it should be installed.  In order to update
+the mlocate database manually, sudo access to the updatedb command is required.
+
+## Sample usage
+### Set tags on files:
+ftags -t tag1,tag2 file1 file2 ....
+
+### List tags on files or directories
+ftags -l [ file1 file2 directory1 ... ]
+
+### Search for tag
+ftags tag 
+
+### Remove tag
+ftags -r tag1,tag2 file1 file1 ...
+
+**Warning:** Moving a file will break its tags. Moving a directory will break tags until next time updatedb is run.
+
+# locate/slocate vs mlocate
+GNU locate does not require root privileges to work since it can run as a regular user, however, mlocate is more likely to be found in different distributions than GNU locate, so it is used by ftags.  Furthermore, it looks like the version installed with Mac OS requires root privileges anyway.
 
 # AUTHOR
 A. G. Madi (@WarpEngineer)

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This file:
 #
-#  - Demos BASH3 Boilerplate (change this for your script)
+#  - Set and search for tags on files.
 #
 # Usage:
 #
@@ -166,14 +166,6 @@ function info ()      { [[ "${LOG_LEVEL:-0}" -ge 6 ]] && __b3bp_log info "${@}";
 function debug ()     { [[ "${LOG_LEVEL:-0}" -ge 7 ]] && __b3bp_log debug "${@}"; true; }
 function output ()    { __b3bp_log output "${@}"; true; }
 
-function box() { 
-	t="$1xxxx"
-	c=${2:-=}
-	output ${t//?/$c}
-	output "$c $1 $c"
-	output ${t//?/$c}
-} # Make box around text. By @bartonski
-
 function help () {
   echo "" 1>&2
   echo " ${*}" 1>&2
@@ -218,11 +210,25 @@ EOF
 
 # shellcheck disable=SC2015
 [[ "${__helptext+x}" ]] || read -r -d '' __helptext <<-'EOF' || true # exits non-zero when EOF encountered
- ftags sets tags on files and searches for them.  #TODO: add more stuff here.
- Note: moving a file will break its tags. moving a directory will break tags until next time updatedb is run.
- usage1: ...
- usage2: ...
- ...
+ ftags sets tags on files and searches for them.  Multiple tags can be set by comma-separating them.
+ Searching for tags is accomplished using the mlocate utility, so it should be installed.  In order to update
+ the mlocate database manually, sudo access to the updatedb command is required.
+
+ Note: Moving a file will break its tags. Moving a directory will break tags until next time updatedb is run.
+
+ Sample usage:
+  Set tags on files:
+  ftags -t tag1,tag2 file1 file2 ....
+
+  List tags on files or directories
+  ftags -l [ file1 file2 directory1 ... ]
+
+  Search for tag
+  ftags tag 
+
+  Remove tag
+  ftags -r tag1,tag2 file1 file1 ...
+
  #TODO: man page (look at experiment notes) and installer (install?)
  #TODO: use 'parallel' if available ( for 'find' option perhaps )
  #TODO: updatedb after set/remove should look for update script. it's different on mac os.
