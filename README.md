@@ -1,26 +1,31 @@
 # ftags
 
-Set tags on files using a simple Bash script.  The script can find files using those tags by utilizing slocate/mlocate.
+The **ftags** utility will set tags on files using a simple Bash script. Multiple tags can be set by comma-separating them.
+Searching for tags is accomplished using the mlocate utility.
 
-## reqs:
+## requirements:
 
 * bash 4
-* slocate/mlocate (on Mac: /usr/libexec/locate.updatedb)
-* find?
+* mlocate
 * building man page requires pandoc
-* realpath: either coreutils or readlink -f or function:
-<pre>
-    realpath ()
-    {
-        f=$@;
-        if [ -d "$f" ]; then
-            base="";
-            dir="$f";
-        else
-            base="/$(basename "$f")";
-            dir=$(dirname "$f");
-        fi;
-        dir=$(cd "$dir" && /bin/pwd);
-        echo "$dir$base"
-    }
-</pre>
+* realpath: either coreutils or readlink -f
+
+## Sample usage
+### Set tags on files:
+ftags -t tag1,tag2 file1 file2 ....
+
+### List tags on files or directories
+ftags -l [ file1 file2 directory1 ... ]
+
+### Search for tag
+ftags tag 
+
+### Remove tag
+ftags -r tag1,tag2 file1 file1 ...
+
+# locate/slocate vs mlocate
+GNU locate does not require root privileges to work since it can run as a regular user, however, mlocate is more likely to be found in different distributions than GNU locate, so it is used by ftags.
+
+# AUTHOR
+A. G. Madi (@WarpEngineer)
+

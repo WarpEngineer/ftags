@@ -32,6 +32,19 @@
 # http://bash3boilerplate.sh/#authors
 # https://github.com/WarpEngineer/bash3boilerplate
 
+ #TODO: installer (install?)
+ #TODO: use 'parallel' if available ( for 'find' option perhaps )
+ #TODO: -R --recurse recurse through subdirs.
+ #TODO: updatedb after set/remove should look for update script. it's different on mac os.
+ #	/usr/libexec/locate.updatedb
+ #TODO: maybe run the updatedb in the background (use pidof to make sure not to run more than one)
+ #TODO: realpath is not available everywhere (Mac) so it should be a local function
+ #      see experiments/NOTES
+ #TODO: test on a bunch of systems, including Mac OS
+ #NOTE: instead of relying on mlocate, can we keep the tags in a hierarchy under ~/.ftags?
+ #	it'll be easier to prune that way too, and we can use find command, and no need for sudo
+ #	use experiments directory to try this out
+
 # Exit on error. Append "|| true" if you expect an error.
 set -o errexit
 # Exit on error inside any functions or subshells.
@@ -46,8 +59,8 @@ set -o pipefail
 # Boilerplate version
 __BOILERPLATE_VERSION__="2016.10.6"
 
-# Set script version 
-__version="2017.12.0.1"
+# Script version 
+__version="2018.04.0.1"
 
 # BASH version 4+ is required
 [[ "${BASH_VERSION:0:1}" -ge "4" ]] || (echo "ERROR: BASH version 4 or above is required"; exit 1)
@@ -198,7 +211,7 @@ function help () {
   -l --list         List set tags on files or directories
   -t --tags   [arg] Comma separated list of tags to set
   -r --remove [arg] Comma separated list of tags to remove
-  -R --recurse      #TODO recurse through subdirs.
+  -R --recurse      (Not yet implemented)
   -u --update       Update mlocate database after setting/removing tags
   -p --prune        Prune broken tags in a directory
   -v                Enable verbose mode, print script as it is executed
@@ -228,18 +241,6 @@ EOF
 
   Remove tag
   ftags -r tag1,tag2 file1 file1 ...
-
- #TODO: man page (look at experiment notes) and installer (install?)
- #TODO: use 'parallel' if available ( for 'find' option perhaps )
- #TODO: updatedb after set/remove should look for update script. it's different on mac os.
- #	/usr/libexec/locate.updatedb
- #TODO: maybe run the updatedb in the background (use pidof to make sure not to run more than one)
- #TODO: realpath is not available everywhere (Mac) so it should be a local function
- #      see README.md
- #TODO: test on a bunch of systems, including Mac OS
- #NOTE: instead of relying on mlocate, can we keep the tags in a hierarchy under ~/.ftags?
- #	it'll be easier to prune that way too, and we can use find command, and no need for sudo
- #	use experiments directory to try this out
 EOF
 
 # Translate usage string -> getopts arguments, and set $arg_<flag> defaults

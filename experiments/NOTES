@@ -1,5 +1,19 @@
 Thinking of different options for locating tags:
 
+realpath ()
+{
+    f=$@;
+    if [ -d "$f" ]; then
+        base="";
+        dir="$f";
+    else
+        base="/$(basename "$f")";
+        dir=$(dirname "$f");
+    fi;
+    dir=$(cd "$dir" && /bin/pwd);
+    echo "$dir$base"
+}
+
 Option 1: mlocate
 pros: 
 	tags are automatically indexed
