@@ -41,3 +41,11 @@ pros:
 	finding tags is faster since they're all together
 cons:
 	directory can get too big with all tag files in it
+
+Other Notes:
+https://github.com/oniony/TMSUþtps://superuser.com/questions/81563/whats-a-good-solution-for-file-tagging-in-
+ext4 attributes: getfattr, setfattr
+ftags mv command to move a file with its tags. 
+Add a notes field. Notes can be added to currently empty tag files
+For Mac: /usr/libexec/locate.updatedb﻿
+
